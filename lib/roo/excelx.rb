@@ -111,6 +111,8 @@ class Roo::Excelx < Roo::Base
     @s_attribute = Hash.new # TODO: ggf. wieder entfernen nur lokal benoetigt
     @comment = Hash.new
     @comments_read = Hash.new
+    @region = Hash.new
+    @region_read = Hash.new
   end
 
   def method_missing(m,*args)
@@ -324,6 +326,25 @@ class Roo::Excelx < Roo::Base
     end
   end
 
+  # ------------------------- Added by jimmy, 2013-10-23 ------------------
+  # true, if there is a merged region
+  def merged_region?(row, col, sheet=nil)
+    merged_regions.each do |region|
+      row_range = Range.new(*[region[0][0], region[1][0]])
+      column_range = Range.new(*[region[0][1], region[1][1]])
+      return true if row_range.cover?(row) && column_range.cover?(col)
+    end
+    return false
+  end
+
+  # ------------------------- Added by jimmy, 2013-10-23 ------------------
+  # return the merged regions
+  def merged_regions(sheet=nil)
+    sheet ||= @default_sheet
+    read_regions(sheet) unless @region_read[sheet]
+    return @region[sheet]
+  end
+
   private
 
   # helper function to set the internal representation of cells
@@ -516,6 +537,22 @@ Datei xl/comments1.xml
       col,row = coordinates.split('$')
       [defined_name['name'], [sheet,row,col]]
     end]
+  end
+
+  # --------------------- Added by jimmy, 2013-10-23 ------------------
+  # read all merged regions in the selected sheet
+  def read_regions(sheet=nil)
+    sheet ||= @default_sheet
+    validate_sheet!(sheet)
+    return if @region_read[sheet]
+
+    @sheet_doc[sheets.index(sheet)].xpath("/xmlns:worksheet/xmlns:mergeCells/xmlns:mergeCell").each do |region|
+      ref = region.attributes['ref'].value.to_s
+      # I need something like [left-top, right-bottom]
+      @region[sheet] ||= []
+      @region[sheet] << ref.split(":").map{|x| Roo::Base.split_coordinate(x)}
+    end
+    @region_read[sheet] = true
   end
 
   # Extracts all needed files from the zip file

@@ -502,10 +502,10 @@ class Roo::Base
       '.xml' => 'Roo::Excel2003XML.new',
     }
     if packed == :zip
-	    # lalala.ods.zip => lalala.ods
-	    # hier wird KEIN unzip gemacht, sondern nur der Name der Datei
-	    # getestet, falls es eine gepackte Datei ist.
-	    filename = File.basename(filename,File.extname(filename))
+      # lalala.ods.zip => lalala.ods
+      # hier wird KEIN unzip gemacht, sondern nur der Name der Datei
+      # getestet, falls es eine gepackte Datei ist.
+      filename = File.basename(filename,File.extname(filename))
     end
     case ext
     when '.ods', '.xls', '.xlsx', '.csv', '.xml'
