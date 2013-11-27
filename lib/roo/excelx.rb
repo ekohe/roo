@@ -326,10 +326,9 @@ class Roo::Excelx < Roo::Base
     end
   end
 
-  # ------------------------- Added by jimmy, 2013-10-23 ------------------
   # true, if there is a merged region
   def merged_region?(row, col, sheet=nil)
-    merged_regions.each do |region|
+    merged_regions(sheet).each do |region|
       row_range = Range.new(*[region[0][0], region[1][0]])
       column_range = Range.new(*[region[0][1], region[1][1]])
       return true if row_range.cover?(row) && column_range.cover?(col)
@@ -337,12 +336,31 @@ class Roo::Excelx < Roo::Base
     return false
   end
 
-  # ------------------------- Added by jimmy, 2013-10-23 ------------------
+  # return the region index for a given row,index pair
+  def region_index_of_cell(row, col, sheet=nil)
+    merged_regions(sheet).each_with_index do |region, index|
+      row_range = Range.new(*[region[0][0], region[1][0]])
+      column_range = Range.new(*[region[0][1], region[1][1]])
+      return index if row_range.cover?(row) && column_range.cover?(col)
+    end
+    return nil
+  end
+
   # return the merged regions
   def merged_regions(sheet=nil)
     sheet ||= @default_sheet
     read_regions(sheet) unless @region_read[sheet]
     return @region[sheet]
+  end
+
+  def get_merged_region_for(row, col, sheet=nil)
+    region_index = region_index_of_cell(row, col, sheet)
+    region_index.nil? ? nil : merged_regions(sheet)[region_index]
+  end
+
+  def normalize_cell_address_for_merged(row, col, sheet=nil)
+    region = get_merged_region_for(row, col, sheet)
+    region.nil? ? [row, col] : region.first
   end
 
   private
@@ -543,8 +561,8 @@ Datei xl/comments1.xml
   # read all merged regions in the selected sheet
   def read_regions(sheet=nil)
     sheet ||= @default_sheet
-    validate_sheet!(sheet)
     return if @region_read[sheet]
+    validate_sheet!(sheet)
 
     @sheet_doc[sheets.index(sheet)].xpath("/xmlns:worksheet/xmlns:mergeCells/xmlns:mergeCell").each do |region|
       ref = region.attributes['ref'].value.to_s
