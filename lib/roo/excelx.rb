@@ -404,8 +404,8 @@ class Roo::Excelx < Roo::Base
   # read all cells in the selected sheet
   def read_cells(sheet=nil)
     sheet ||= @default_sheet
-    validate_sheet!(sheet)
     return if @cells_read[sheet]
+    validate_sheet!(sheet)
 
     @sheet_doc[sheets.index(sheet)].xpath("/xmlns:worksheet/xmlns:sheetData/xmlns:row/xmlns:c").each do |c|
       s_attribute = c['s'].to_i   # should be here

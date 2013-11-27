@@ -69,7 +69,6 @@ class Roo::Base
     validate_sheet!(sheet)
     @default_sheet = sheet
     @first_row[sheet] = @last_row[sheet] = @first_column[sheet] = @last_column[sheet] = nil
-    @cells_read[sheet] = false
   end
 
   # first non-empty column as a letter
