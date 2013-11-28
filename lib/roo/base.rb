@@ -785,6 +785,7 @@ class Roo::Base
 
   # converts an integer value to a time string like '02:05:06'
   def self.integer_to_timestring(content)
+    content = content.round
     h = (content/3600.0).floor
     content = content - h*3600
     m = (content/60.0).floor
